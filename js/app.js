@@ -18,7 +18,61 @@ const buscarClima = (event) => {
         return;
     }
 
+    //Consultar API
+    consultarAPI(ciudad, pais);
+
 }
+
+const consultarAPI = ( ciudad, pais ) => {
+    const appId = 'ae31e941613f91b2feb1a5f72212c334';
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${ciudad},${pais}&appid=${appId}`;
+
+    console.log(url);
+
+    fetch(url)
+        .then( respuesta => respuesta.json() )
+        .then( datos => {
+            limpiaHTML();
+            if(datos.cod === "404") {
+                mostrarError('Ciudad no encontrada');
+                return;
+            }
+            //imprimir la respuesta
+            mostrarClima(datos);
+        }
+    );
+}
+
+const mostrarClima = (datos) => {
+    const { name, main: { temp, temp_max, temp_min } } = datos;
+
+    const nombreCiudad = document.createElement('p');
+    nombreCiudad.textContent = `Clima en ${name}`;
+    nombreCiudad.classList.add('font-bold', 'text-2xl');
+
+    const actual = document.createElement('p');
+    actual.innerHTML = `${kelvinACentigrados(temp)} &#8451;`;
+    actual.classList.add('font-bold', 'text-6xl');
+
+    const tempMaxima = document.createElement('p');
+    tempMaxima.innerHTML = `Max: ${kelvinACentigrados(temp_max)} &#8451;`;
+    tempMaxima.classList.add('text-xl');
+
+    const tempMinima = document.createElement('p');
+    tempMinima.innerHTML = `Min: ${kelvinACentigrados(temp_min)} &#8451;`;
+    tempMinima.classList.add('text-xl');
+
+    const resultadoDiv = document.createElement('div');
+    resultadoDiv.classList.add('text-center', 'text-white');
+    resultadoDiv.appendChild(nombreCiudad);
+    resultadoDiv.appendChild(actual);
+    resultadoDiv.appendChild(tempMaxima);
+    resultadoDiv.appendChild(tempMinima);
+
+    resultado.appendChild(resultadoDiv);
+};
+
+const kelvinACentigrados = (grados) => parseInt(grados - 273.15);
 
 const mostrarError = (mensaje) => {
     const alerta = document.querySelector('.bg-red-100');
@@ -39,5 +93,11 @@ const mostrarError = (mensaje) => {
         setTimeout(() => {
             alerta.remove();
         }, 3000);
+    }
+}
+
+const limpiaHTML = () => {
+    while(resultado.firstChild) {
+        resultado.removeChild(resultado.firstChild);
     }
 }
